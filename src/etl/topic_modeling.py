@@ -31,7 +31,7 @@ def gerar_topicos(docs: list[str]):
     print("\nTop 5 Tópicos encontrados:")
     print(info.head())
 
-    return topic_model, info
+    return topic_model, info, topics
 
 if __name__ == "__main__":
     from curriculos_loader import carregar_dados_mistos
@@ -39,6 +39,13 @@ if __name__ == "__main__":
     caminho_csv = "data/curriculos/dataset_bertopic.csv" 
     
     docs, _ = carregar_dados_mistos(caminho_csv)
-    modelo, tabela_topicos = gerar_topicos(docs)
+    modelo, tabela_topicos, lista_topicos = gerar_topicos(docs)
     
     tabela_topicos.to_csv("data/processed/topicos_gerados.csv", index=False)
+
+    df_mapping = pd.DataFrame({
+        "Document": docs,
+        "Topic": lista_topicos
+    })
+    df_mapping.to_csv("data/processed/doc_topic_mapping.csv", index=False)
+    print("Mapeamento de documentos para tópicos salvo em: data/processed/doc_topic_mapping.csv")

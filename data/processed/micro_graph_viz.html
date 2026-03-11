@@ -1,0 +1,163 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 700px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "font": {"color": "black"}, "id": "Aprendizagem Baseada Em Problemas", "label": "Aprendizagem Baseada Em Problemas", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Estrat\u00e9gia De Ensino", "label": "Estrat\u00e9gia De Ensino", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Fundamentos Dos Sistemas De Representa\u00e7\u00e3o Do Conhecimento", "label": "Fundamentos Dos Sistemas De Representa\u00e7\u00e3o Do Conhecimento", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Aut\u00f4matos Celulares", "label": "Aut\u00f4matos Celulares", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Cria\u00e7\u00e3o de Games", "label": "Cria\u00e7\u00e3o de Games", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Dispositivos M\u00f3veis", "label": "Dispositivos M\u00f3veis", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Games", "label": "Games", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Efeito Motivacional", "label": "Efeito Motivacional", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Processo de Aprendizagem", "label": "Processo de Aprendizagem", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Role Playing Game (rpg)", "label": "Role Playing Game (rpg)", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "letramento bil\u00edngue", "label": "letramento bil\u00edngue", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "surdos", "label": "surdos", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "revis\u00e3o sistem\u00e1tica", "label": "revis\u00e3o sistem\u00e1tica", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "uso de RPG", "label": "uso de RPG", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Game Theory", "label": "Game Theory", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sustainable Development", "label": "Sustainable Development", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Pharmaceutical Industry", "label": "Pharmaceutical Industry", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Jogos Educativos Digitais", "label": "Jogos Educativos Digitais", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Aspectos Cognitivos", "label": "Aspectos Cognitivos", "shape": "dot", "size": 10, "type": "Entity"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Aprendizagem", "label": "Aprendizagem", "shape": "dot", "size": 10, "type": "Entity"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "Aprendizagem Baseada Em Problemas", "relation": "\u00e9", "to": "Estrat\u00e9gia De Ensino", "width": 1}, {"arrows": "to", "from": "Fundamentos Dos Sistemas De Representa\u00e7\u00e3o Do Conhecimento", "relation": "experi\u00eancia com", "to": "Aut\u00f4matos Celulares", "width": 1}, {"arrows": "to", "from": "Cria\u00e7\u00e3o de Games", "relation": "aplica-se em", "to": "Dispositivos M\u00f3veis", "width": 1}, {"arrows": "to", "from": "Games", "relation": "produz", "to": "Efeito Motivacional", "width": 1}, {"arrows": "to", "from": "Games", "relation": "influencia", "to": "Processo de Aprendizagem", "width": 1}, {"arrows": "to", "from": "Efeito Motivacional", "relation": "transforma", "to": "Processo de Aprendizagem", "width": 1}, {"arrows": "to", "from": "Role Playing Game (rpg)", "relation": "usa para", "to": "letramento bil\u00edngue", "width": 1}, {"arrows": "to", "from": "Role Playing Game (rpg)", "relation": "aplica-se a", "to": "surdos", "width": 1}, {"arrows": "to", "from": "revis\u00e3o sistem\u00e1tica", "relation": "analisa", "to": "uso de RPG", "width": 1}, {"arrows": "to", "from": "Game Theory", "relation": "promove", "to": "Sustainable Development", "width": 1}, {"arrows": "to", "from": "Game Theory", "relation": "aplica-se em", "to": "Pharmaceutical Industry", "width": 1}, {"arrows": "to", "from": "Jogos Educativos Digitais", "relation": "motiva", "to": "Aspectos Cognitivos", "width": 1}, {"arrows": "to", "from": "Jogos Educativos Digitais", "relation": "influencia", "to": "Aprendizagem", "width": 1}, {"arrows": "to", "from": "Aspectos Cognitivos", "relation": "afeta", "to": "Aprendizagem", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "repulsion": {
+            "centralGravity": 0.2,
+            "damping": 0.09,
+            "nodeDistance": 150,
+            "springConstant": 0.05,
+            "springLength": 200
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

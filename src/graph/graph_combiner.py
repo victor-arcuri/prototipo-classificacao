@@ -2,6 +2,7 @@ import networkx as nx
 import pandas as pd
 import pickle
 import numpy as np
+import json
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -15,47 +16,83 @@ def graft_lattes_topics(G: nx.DiGraph, df_topics: pd.DataFrame):
     print("Carregando modelo de Embeddings...")
     model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
     
-    cnpq_nodes = [n for n, attr in G.nodes(data=True) if attr.get('origin') == 'CNPQ']
+    cnpq_leaves = [n for n in G.nodes() 
+                   if G.nodes[n].get('origin') == 'CNPQ' and G.out_degree(n) == 0]
     
-    print(f"Calculando vetores para {len(cnpq_nodes)} nós da taxonomia oficial...")
-    cnpq_embeddings = model.encode(cnpq_nodes)
+    print(f"Calculando vetores para {len(cnpq_leaves)} nós FOLHA (Nível mais baixo)...")
 
-    print("Iniciando enxerto dos tópicos descobertos...")
-    count = 0
+    cnpq_embeddings = model.encode(cnpq_leaves)
+
+
+    print("Iniciando enxerto multi-áreas...")
+    count_nodes = 0
+    count_edges = 0
     
     for _, row in df_topics.iterrows():
-        label = row['LLM_Label']
-        category = row['Category']
-        confidence = row['Confidence']
-        
-        if row['Topic'] == -1 or confidence < 0.5: 
+        if row['Topic'] == -1: 
             continue
 
-        search_query = f"{label} ({category})"
-        query_embedding = model.encode([search_query])
-
-        similarities = cosine_similarity(query_embedding, cnpq_embeddings)[0]
-        best_idx = np.argmax(similarities)
-        best_score = similarities[best_idx]
-        parent_node_name = cnpq_nodes[best_idx]
-
-        G.add_node(
-            label, 
-            label=label,
-            Category=category, 
-            title=f"<b>{label}</b><br>Grande Área: {category}<br>Confiança IA: {confidence}",
-            origin="LATTES",
-            color="#FF5733",
-            size=15, 
-            layer=5
-        )
-
-        G.add_edge(parent_node_name, label, weight=float(best_score), relation="descoberto_em")
+        label = row['LLM_Label']
         
-        print(f"  {label} --> {parent_node_name} (Score: {best_score:.2f})")
-        count += 1
+        try:
+            areas = json.loads(row['Multi_Areas_JSON'])
+        except Exception as e:
+            print(f"Erro lendo JSON do tópico {row['Topic']}: {e}")
+            continue
 
-    print(f"Grafo Final Concluído! {count} novos tópicos inseridos.")
+        main_category = areas[0]['area_name'] if areas else "Indefinido"
+        
+        micro_graph_file = f"data/processed/micro_grafos/topico_{row['Topic']}.gpickle"
+        
+        if not G.has_node(label):
+            G.add_node(
+                label, 
+                label=label,
+                Category=main_category, 
+                origin="LATTES",
+                color="#FF5733",
+                size=15, 
+                layer=5,
+                micro_path=micro_graph_file
+            )
+            count_nodes += 1
+
+        for area in areas:
+            area_name = area['area_name']
+            confidence = area['confidence']
+
+            if confidence < 0.6:
+                continue
+
+            search_query = f"{label} ({area_name})"
+            query_embedding = model.encode([search_query])
+
+            similarities = cosine_similarity(query_embedding, cnpq_embeddings)[0]
+            best_idx = np.argmax(similarities)
+            best_score = similarities[best_idx]
+            parent_node_name = cnpq_leaves[best_idx]
+
+            if parent_node_name.strip().lower() == label.strip().lower():
+                continue
+
+            if G.has_edge(parent_node_name, label):
+                continue
+
+            if best_score > 0.4:
+                G.add_edge(
+                    parent_node_name, 
+                    label, 
+                    weight=float(best_score), 
+                    relation="interdisciplinar",
+                    context=area_name
+                )
+                
+                print(f"  {label} --> {parent_node_name} [Ctx: {area_name}] (Score: {best_score:.2f})")
+                count_edges += 1
+
+    print(f"Grafo Final Concluído!")
+    print(f"Tópicos inseridos: {count_nodes}")
+    print(f"Conexões interdisciplinares criadas: {count_edges}")
     return G
 
 def run_grafting():
